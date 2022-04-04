@@ -4,22 +4,73 @@ import * as ActionTypes from './ActionTypes';
 import { baseUrl } from '../shared/baseUrl';
 
 
-export const addComment = (dishId, rating, author, comment) => ({
+export const addComment = (comment) => ({
     type: ActionTypes.ADD_COMMENT,
-    payload: {
+    payload: comment
+});
+
+//post/add comment
+export const postComment = (dishId, rating, author, comment) => (dispatch)=> {
+    
+    const newComment = {
         dishId: dishId,
         rating: rating,
         author: author,
         comment: comment
-    }
-});
+    };
+    newComment.date = new Date().toISOString();
 
+    return fetch(baseUrl + 'comments', {
+        method: 'POST',
+        body: JSON.stringify(newComment),
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (response.ok) {
+          return response;
+        } else {
+          var error = new Error('Error ' + response.status + ': ' + response.statusText);
+          error.response = response;
+          throw error;
+        }
+      },
+      error => {
+            var errmess = new Error(error.message);
+            throw errmess;
+    })
+    .then(response => response.json())
+    .then(response => dispatch(addComment(response)))
+    .catch(error => {
+        alert('Your comment could not be posted ' , error.message)
+    });
+
+}
+
+
+//Dishes actions
 export const fetchDishes = () => (dispatch)=> {
     dispatch(dishesLoading(true));
 
     return fetch(baseUrl + 'dishes')
-        .then(response => response.json())
-        .then(dishes => dispatch(addDishes(dishes)));
+    .then(response => {
+        if (response.ok) {
+          return response;
+        } else {
+          var error = new Error('Error ' + response.status + ': ' + response.statusText);
+          error.response = response;
+          throw error;
+        }
+      },
+      error => {
+            var errmess = new Error(error.message);
+            throw errmess;
+      })
+    .then(response => response.json())
+    .then(dishes => dispatch(addDishes(dishes)))
+    .catch(error => dispatch(dishesFailed(error.message)));
 };
 
 export const dishesLoading = () => ({
@@ -37,7 +88,7 @@ export const dishesFailed = (errmess) => ({
 });
 
 
-
+//Comments actions
 export const fetchComments = () => (dispatch)=> {
     dispatch(dishesLoading(true));
 
@@ -58,7 +109,7 @@ export const commentsFailed = (errmess) => ({
 
 
 
-
+//Propmotions actions
 export const fetchPromos = () => (dispatch)=> {
     dispatch(promosLoading(true));
 
@@ -83,7 +134,9 @@ export const promosFailed = (errmess) => ({
 
 
 
+
 // Removed during server communication
+
 // export const fetchDishes = () => (dispatch)=> {
 //     dispatch(dishesLoading(true));
 

@@ -8,6 +8,7 @@ import { Control, LocalForm, Errors } from 'react-redux-form';
 import { Loading } from './LoadingComponent';
 import { baseUrl} from '../shared/baseUrl';
 
+import {FadeTransform, Fade, Stagger } from 'react-animation-components';
 
 /**...... ...............Comment Form.......................... */
 //// validators
@@ -30,7 +31,7 @@ class CommentForm extends Component {
 
     handleCommentFormSubmit(values) {
         this.toggleCommentFormModal();
-        this.props.addComment(this.props.dishId, values.rating, values.author, values.comment);
+        this.props.postComment(this.props.dishId, values.rating, values.author, values.comment);
         alert("Current State is: " + JSON.stringify(values));
     }
 
@@ -154,6 +155,10 @@ class CommentForm extends Component {
         if (dish != null) {
             return (
                 <div className="col-12 col-md-5 m-1">
+                <FadeTransform in 
+                    transformProps={{
+                        exitTransform: 'scale(0.5) translateY(-50%)'
+                    }}>
                     <Card>
                         <CardImg width="100%" src={ baseUrl + dish.image} alt={dish.name} />
                         <CardBody>
@@ -161,6 +166,7 @@ class CommentForm extends Component {
                             <CardText> {dish.description} </CardText>
                         </CardBody>
                     </Card>
+                </FadeTransform>
                 </div>    
             );
         } else {
@@ -171,12 +177,13 @@ class CommentForm extends Component {
     }
 
     // function RenderComments(props){}
-    function RenderComments({dishId, comments, addComment}) {
+    function RenderComments({dishId, comments, postComment}) {
         if (comments != null) {
             const cmnts = comments.map((commnts) => {
                 return (
                     <ul key={commnts.id} className="list-unstyled">
                         <li>
+                        <Stagger in>
                             <p> {commnts.comment} </p>
                             <p> -- {commnts.author},
                                 &nbsp;
@@ -186,6 +193,7 @@ class CommentForm extends Component {
                                     day: '2-digit'
                                 }).format(new Date(Date.parse(commnts.date)))}
                             </p>
+                        </Stagger>
                         </li>
                     </ul>
                 );
@@ -197,7 +205,7 @@ class CommentForm extends Component {
                     <ul className='list-unstyled'>
                         {cmnts}
                     </ul>
-                <CommentForm dishId={dishId} addComment={addComment} />
+                <CommentForm dishId={dishId} postComment={postComment} />
                    
                 </div>
             );  
@@ -246,7 +254,7 @@ class CommentForm extends Component {
                         <RenderDish dish={props.dish} />
                         <RenderComments dishId={props.dish.id} 
                                         comments={props.comments}
-                                        addComment={props.addComment} />
+                                        postComment={props.postComment} />
                     </div>    
                 </div>
             );
